@@ -11,13 +11,7 @@ export const register = (email, password) => {
       "password": password
     })
   })
-  .then((response) => {
-    return response.json();
-  })
-  .then((res) => {
-    return res;
-  })
-  .catch((err) => console.log(err));
+  .then(res => _checkResponse(res))
 }
 
 export const login = (email, password) => {
@@ -31,13 +25,7 @@ export const login = (email, password) => {
       "password" : password
     })
   })
-  .then((response) => {
-    return response.json();
-  })
-  .then((res) => {
-    return res;
-  })
-  .catch((err) => console.log(err));
+  .then(res => _checkResponse(res))
 }
 
 export const checkToken = (token) => {
@@ -48,7 +36,12 @@ export const checkToken = (token) => {
       "Authorization": `Bearer ${token}`,
     }
   })
-  .then(res => res.json())
-  .then(data => data)
-  .catch((err) => console.log(err));
+  .then(res => _checkResponse(res))
+}
+
+const _checkResponse = (res) => {
+  if (res.ok) {
+    return res.json();
+  }
+  return Promise.reject(`Ошибка: ${res.status}`);
 }
