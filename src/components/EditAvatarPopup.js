@@ -5,9 +5,9 @@ function EditAvatarPopup({isOpen, onClose, onUpdateAvatar}) {
 
   function handleSubmit(e) {
     e.preventDefault();
-  
     onUpdateAvatar(urlRef.current.value)
-    urlRef.current.value = ""
+    /* не совсем поняла как это сделать через useEffect, исправлю в скором будущем. */
+    urlRef.current.value = "" 
   } 
 
   return (

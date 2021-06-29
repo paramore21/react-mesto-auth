@@ -22,7 +22,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState({})
   const [currentEmail, setCurrentEmail] = useState("")
   const [cards, setCards] = useState([])
-  const [isLoginPopupOpen, setIsLoginPopupOpen] = useState({opened: false, sucess: false})
+  const [infoTooltipState, setInfoTooltipState] = useState({opened: false, sucess: false})
   const [loggedIn, setLoggedIn] = useState(false)
   const history = useHistory()
 
@@ -43,7 +43,7 @@ function App() {
     setIsEditAvatarPopupOpen(false)
     setIsEditProfilePopupOpen(false)
     setSelectedCard({isOpen: false})
-    setIsLoginPopupOpen(false)
+    setInfoTooltipState({opened: false, sucess: false})
   }
 
   function handleCardClick(card){
@@ -59,13 +59,14 @@ function App() {
     .catch(err => console.log(err))
   }
 
-  function handleCardLike(card) {
-    const isLiked = card.likes.some(i => i._id === currentUser._id);
-    api.changeLikeStatus(card, isLiked).then((newCard) => {
-      setCards((state) => state.map((c) => c._id === card._id ? newCard : c));
-    })
-    .catch(err => console.log(err));
-  }
+  function handleCardLike(card, isLiked) { 
+    const {_id} = card
+    api.changeLikeStatus(_id, isLiked).then((newCard) => { 
+      setCards((state) => state.map((c) => c._id === _id ? newCard : c)); 
+    }) 
+    .catch(err => console.log(err)); 
+  } 
+
   function handleUpdateUser({name, about}) {
     return api.updateUserInformation(name, about).then((res) => {
       setCurrentUser(res)
@@ -92,14 +93,12 @@ function App() {
 
   function handleRegister({email, password}){
     auth.register(email, password).then(() => {
-      setCurrentEmail(email)
-      setIsLoginPopupOpen({ opened: true, success: true })
+      setInfoTooltipState({ opened: true, success: true })
       history.push("/login")
     })  
     .catch(err => {
       console.log(err)
-      setIsLoginPopupOpen({ opened: true, success: false })
-      history.push("/login")
+      setInfoTooltipState({ opened: true, success: false })
     })
   }
 
@@ -107,7 +106,6 @@ function App() {
     auth.login(email, password).then((res) => {
       localStorage.setItem('token', `${res.token}`)
       setCurrentEmail(email)
-      localStorage.setItem('email', email)
       setLoggedIn(true)
       history.push("/")
     })
@@ -123,7 +121,7 @@ function App() {
 
   useEffect(() => {
     const token = localStorage.getItem('token')
-    if(token !== undefined) {
+    if(token) {
       auth.checkToken(token)
       .then(result => {
         if (result) {
@@ -132,13 +130,15 @@ function App() {
           history.push('/');
         }
       })
+      .catch(err => console.log(err))
     }
+
     api.getAppInfo()
     .then(([cardData, userData]) => {
       setCurrentUser(userData);
       setCards(cardData);
     })
-  .catch(err => console.log(err))
+    .catch(err => console.log(err))
   }, [])
   
 
@@ -180,7 +180,7 @@ function App() {
           card={selectedCard}
           onClose={closeAllPopups}
         />
-        <InfoTooltip isOpen={isLoginPopupOpen.opened} onClose={closeAllPopups} isAuthSuccess={isLoginPopupOpen.success} />  
+        <InfoTooltip isOpen={infoTooltipState.opened} onClose={closeAllPopups} isAuthSuccess={infoTooltipState.success} />  
       </CurrentUserContext.Provider>
     </div>
   );
